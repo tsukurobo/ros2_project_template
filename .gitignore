@@ -13,4 +13,7 @@ __pycache__/
 ros.key
 
 rosbag2_*
+
 .codex
+.codex/
+.agents/

@@ -1,6 +1,8 @@
 set shell := ["bash", "-c"]
 
 ros_distro := env_var('ROS_DISTRO')
+project_name := env_var_or_default('ROS_PROJECT_NAME', 'ros2_project_template')
+bringup_package := env_var_or_default('ROS_BRINGUP_PACKAGE', project_name + '_bringup')
 
 default:
   @just --list
@@ -30,10 +32,10 @@ test *packages: _cd
     source install/setup.bash && \
     colcon test {{ if packages == "" { "" } else { "--packages-select " + packages } }} --event-handlers console_direct+ --return-code-on-test-failure
 
-# run launch file from abu2026_bringup
+# run launch file from bringup package
 run name: _cd
     source install/setup.bash && \
-    ros2 launch abu2026_bringup {{name}}.launch.yaml
+    ros2 launch {{bringup_package}} {{name}}.launch.yaml
 
 # clean [packages...]
 clean *packages: _cd

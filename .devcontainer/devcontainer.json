@@ -19,13 +19,16 @@
   ],
   "containerEnv": {
     "TZ": "Asia/Tokyo",
+    "ROS_PROJECT_NAME": "${localWorkspaceFolderBasename}",
+    "ROS_PACKAGE_PREFIX": "${localWorkspaceFolderBasename}",
+    "ROS_BRINGUP_PACKAGE": "${localWorkspaceFolderBasename}_bringup",
     "DISPLAY": "${localEnv:DISPLAY}", // Needed for GUI try ":0" for windows
 		"WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
 		"XDG_RUNTIME_DIR": "/home/vscode/.xdg-runtime",
 		"PULSE_SERVER": "${localEnv:PULSE_SERVER}"
   },
-  "workspaceFolder": "/home/vscode/abu2026_ros2",
-  "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/abu2026_ros2,type=bind",
+  "workspaceFolder": "/home/vscode/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/${localWorkspaceFolderBasename},type=bind",
   "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
   "customizations": {
     "vscode": {

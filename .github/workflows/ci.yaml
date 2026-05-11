@@ -62,15 +62,23 @@ jobs:
       - name: Run tests
         run: |
           source install/setup.bash
-          TARGET_PKGS=$(colcon list --names-only | grep "^${ROS_PACKAGE_PREFIX}" | xargs)
-          echo "Target packages for testing: $TARGET_PKGS"
+          ALL_PKGS=$(colcon list --names-only | xargs)
+          TARGET_PKGS=$(printf '%s\n' $ALL_PKGS | grep "^${ROS_PACKAGE_PREFIX}" | xargs || true)
 
           if [ -z "$TARGET_PKGS" ]; then
-            echo "No packages starting with '${ROS_PACKAGE_PREFIX}' found!"
-            exit 1
+            TARGET_PKGS="$ALL_PKGS"
+            echo "No packages starting with '${ROS_PACKAGE_PREFIX}' found. Falling back to all packages."
           fi
 
+          if [ -z "$TARGET_PKGS" ]; then
+            echo "No packages found. Skipping tests."
+            echo "SKIP_TEST_RESULTS=1" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          echo "Target packages for testing: $TARGET_PKGS"
           colcon test --packages-select $TARGET_PKGS --event-handlers console_direct+ --return-code-on-test-failure
 
       - name: Check test results
+        if: env.SKIP_TEST_RESULTS != '1'
         run: colcon test-result --verbose

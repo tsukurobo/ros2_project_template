@@ -1,0 +1,68 @@
+name: ROS 2 Jazzy CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        ros_distro: [jazzy]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT_TOKEN || github.token }}
+
+      - name: Setup ROS 2
+        uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: ${{ matrix.ros_distro }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          vcs import --input build_depends.repos --recursive .
+          rosdep update --rosdistro ${{ matrix.ros_distro }}
+          rosdep install --from-paths . --ignore-src -r -y --rosdistro ${{ matrix.ros_distro }}
+
+      - name: Format code
+        run: |
+          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
+          # Format C++ files only in our packages (avoiding install/, dep/, etc.)
+          find . -maxdepth 1 -type d -name "abu2026_*" | xargs ament_clang_format --reformat || true
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: auto formatting"
+          file_pattern: '*'
+
+      - name: Build with colcon
+        run: |
+          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
+          colcon build --packages-select abu2026_msgs --symlink-install
+          source install/setup.bash
+          export PYTHONPATH=/opt/ros/${{ matrix.ros_distro }}/lib/python3.12/site-packages:$PYTHONPATH
+          colcon build --event-handlers console_direct+ --symlink-install
+
+
+      - name: Run tests
+        run: |
+          source install/setup.bash
+          TARGET_PKGS=$(colcon list --names-only | grep '^abu2026' | xargs)
+          echo "Target packages for testing: $TARGET_PKGS"
+
+          if [ -z "$TARGET_PKGS" ]; then
+            echo "No packages starting with 'abu2026' found!"
+            exit 1
+          fi
+
+          colcon test --packages-select $TARGET_PKGS --event-handlers console_direct+ --return-code-on-test-failure
+
+      - name: Check test results
+        run: colcon test-result --verbose

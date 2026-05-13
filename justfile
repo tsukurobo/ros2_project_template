@@ -1,8 +1,6 @@
 set shell := ["bash", "-c"]
 
 ros_distro := env_var('ROS_DISTRO')
-project_name := env_var_or_default('ROS_PROJECT_NAME', 'ros2_project_template')
-bringup_package := env_var_or_default('ROS_BRINGUP_PACKAGE', project_name + '_bringup')
 
 default:
   @just --list
@@ -35,7 +33,8 @@ test *packages: _cd
 # run launch file from bringup package
 run name: _cd
     source install/setup.bash && \
-    ros2 launch {{bringup_package}} {{name}}.launch.yaml
+    project_name="$(basename "{{justfile_directory()}}" | sed 's/_ros2$//')" && \
+    ros2 launch "${project_name}_bringup" {{name}}.launch.yaml
 
 # clean [packages...]
 clean *packages: _cd

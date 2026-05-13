@@ -6,11 +6,6 @@ on:
       - main
   pull_request:
 
-env:
-  ROS_PROJECT_NAME: ${{ vars.ROS_PROJECT_NAME || github.event.repository.name }}
-  ROS_PACKAGE_PREFIX: ${{ vars.ROS_PACKAGE_PREFIX || vars.ROS_PROJECT_NAME || github.event.repository.name }}
-  ROS_MSGS_PACKAGE: ${{ vars.ROS_MSGS_PACKAGE || '' }}
-
 jobs:
   build-and-test:
     runs-on: ubuntu-24.04
@@ -22,6 +17,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.PAT_TOKEN || github.token }}
+
+      - name: Set project names
+        run: |
+          REPOSITORY_NAME="${GITHUB_REPOSITORY##*/}"
+          PROJECT_NAME="${REPOSITORY_NAME%_ros2}"
+          echo "PROJECT_NAME=$PROJECT_NAME" >> "$GITHUB_ENV"
+          echo "PACKAGE_PREFIX=$PROJECT_NAME" >> "$GITHUB_ENV"
+          echo "MSGS_PACKAGE=${PROJECT_NAME}_msgs" >> "$GITHUB_ENV"
 
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@v0.7
@@ -39,7 +42,7 @@ jobs:
         run: |
           source /opt/ros/${{ matrix.ros_distro }}/setup.bash
           # Format C++ files only in our packages (avoiding install/, dep/, etc.)
-          find . -maxdepth 1 -type d -name "${ROS_PACKAGE_PREFIX}_*" | xargs ament_clang_format --reformat || true
+          find . -maxdepth 1 -type d -name "${PACKAGE_PREFIX}_*" | xargs ament_clang_format --reformat || true
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -50,7 +53,6 @@ jobs:
       - name: Build with colcon
         run: |
           source /opt/ros/${{ matrix.ros_distro }}/setup.bash
-          MSGS_PACKAGE="${ROS_MSGS_PACKAGE:-${ROS_PACKAGE_PREFIX}_msgs}"
           if colcon list --names-only | grep -qx "$MSGS_PACKAGE"; then
             colcon build --packages-select "$MSGS_PACKAGE" --symlink-install
             source install/setup.bash
@@ -63,11 +65,11 @@ jobs:
         run: |
           source install/setup.bash
           ALL_PKGS=$(colcon list --names-only | xargs)
-          TARGET_PKGS=$(printf '%s\n' $ALL_PKGS | grep "^${ROS_PACKAGE_PREFIX}" | xargs || true)
+          TARGET_PKGS=$(printf '%s\n' $ALL_PKGS | grep -E "^${PACKAGE_PREFIX}(_|$)" | xargs || true)
 
           if [ -z "$TARGET_PKGS" ]; then
             TARGET_PKGS="$ALL_PKGS"
-            echo "No packages starting with '${ROS_PACKAGE_PREFIX}' found. Falling back to all packages."
+            echo "No packages starting with '${PACKAGE_PREFIX}' found. Falling back to all packages."
           fi
 
           if [ -z "$TARGET_PKGS" ]; then

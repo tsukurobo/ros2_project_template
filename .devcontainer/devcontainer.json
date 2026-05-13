@@ -1,31 +1,28 @@
 {
   "name": "ROS 2 Jazzy GUI Development Container",
   "remoteUser": "vscode",
-    "build": {
-        "dockerfile": "Dockerfile",
-        "args": {
-            "USERNAME": "vscode"
-        }
-    },
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "USERNAME": "vscode"
+    }
+  },
   "runArgs": [
     "--network=host",
-		"--cap-add=SYS_PTRACE",
-		"--security-opt=seccomp:unconfined",
-		"--security-opt=apparmor:unconfined",
-		"--volume=/tmp/.X11-unix:/tmp/.X11-unix",
-		"--volume=/mnt/wslg:/mnt/wslg",
-		"--ipc=host",
+    "--cap-add=SYS_PTRACE",
+    "--security-opt=seccomp:unconfined",
+    "--security-opt=apparmor:unconfined",
+    "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
+    "--volume=/mnt/wslg:/mnt/wslg",
+    "--ipc=host",
     "--device=/dev/dri"
   ],
   "containerEnv": {
     "TZ": "Asia/Tokyo",
-    "ROS_PROJECT_NAME": "${localWorkspaceFolderBasename}",
-    "ROS_PACKAGE_PREFIX": "${localWorkspaceFolderBasename}",
-    "ROS_BRINGUP_PACKAGE": "${localWorkspaceFolderBasename}_bringup",
-    "DISPLAY": "${localEnv:DISPLAY}", // Needed for GUI try ":0" for windows
-		"WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
-		"XDG_RUNTIME_DIR": "/home/vscode/.xdg-runtime",
-		"PULSE_SERVER": "${localEnv:PULSE_SERVER}"
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+    "XDG_RUNTIME_DIR": "/home/vscode/.xdg-runtime",
+    "PULSE_SERVER": "${localEnv:PULSE_SERVER}"
   },
   "workspaceFolder": "/home/vscode/${localWorkspaceFolderBasename}",
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/${localWorkspaceFolderBasename},type=bind",

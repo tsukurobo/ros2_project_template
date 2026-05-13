@@ -17,9 +17,10 @@ Dev Container を使う場合は、VS Code でこのリポジトリを開き、�
 ## セットアップ
 
 1. このリポジトリをテンプレートとして新しいリポジトリを作成します。
-2. 必要に応じて、ROS パッケージをこのワークスペース直下に追加します。
-3. 外部リポジトリ依存がある場合は、`build_depends.repos` に追加します。
-4. 依存関係を取得します。
+2. リポジトリ名を `{project_name}_ros2` にします。
+3. ROS パッケージは `{project_name}` を接頭辞として、このワークスペース直下に追加します。
+4. 外部リポジトリ依存がある場合は、`build_depends.repos` に追加します。
+5. 依存関係を取得します。
 
 ```bash
 just deps
@@ -56,19 +57,19 @@ just format
 just clean
 ```
 
-`just run <launch_name>` は、既定では `${ROS_PROJECT_NAME}_bringup` パッケージ内の
+`just run <launch_name>` は、`{project_name}_bringup` パッケージ内の
 `<launch_name>.launch.yaml` を実行します。
 
-## 環境変数
+## 命名規則
 
-必要に応じて以下の環境変数を設定できます。
+このテンプレートでは、リポジトリ名とパッケージ名を以下の規則に固定しています。
 
-- `ROS_PROJECT_NAME`: プロジェクト名。未設定時は `ros2_project_template`
-- `ROS_PACKAGE_PREFIX`: CI で対象パッケージを絞るための接頭辞
-- `ROS_BRINGUP_PACKAGE`: launch 実行時に使う bringup パッケージ名
-- `ROS_MSGS_PACKAGE`: CI で先にビルドする msg パッケージ名
+- リポジトリ名: `{project_name}_ros2`
+- パッケージ接頭辞: `{project_name}`
+- bringup パッケージ: `{project_name}_bringup`
+- msg パッケージ: `{project_name}_msgs`
 
-Dev Container では、`ROS_PROJECT_NAME` と `ROS_PACKAGE_PREFIX` はワークスペースのフォルダ名から設定されます。
+`just` と CI は、リポジトリ名から末尾の `_ros2` を除いた値を `{project_name}` として扱います。
 
 ## フォーマットとテスト
 
@@ -95,8 +96,6 @@ CI では ROS 2 Jazzy 環境で依存関係のインストール、フォーマ�
 
 ## テンプレート利用時に見直すもの
 
-- リポジトリ名と `ROS_PROJECT_NAME`
-- パッケージ名の接頭辞
+- リポジトリ名
+- パッケージ名
 - `build_depends.repos` の依存リポジトリ
-- bringup パッケージ名
-- GitHub Actions の repository variables

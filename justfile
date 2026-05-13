@@ -6,6 +6,8 @@ default:
   @just --list
 
 alias dep := deps
+alias s := setup
+alias submodule := submodules
 alias b := build
 alias t := test
 alias r := run
@@ -13,6 +15,13 @@ alias d := doc
 
 _cd:
   @cd {{justfile_directory()}}
+
+# setup workspace
+setup: submodules deps
+
+# initialize git submodules
+submodules: _cd
+  git submodule update --init --recursive
 
 # install dependencies
 deps: _cd

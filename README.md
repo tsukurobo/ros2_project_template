@@ -20,10 +20,37 @@ Dev Container を使う場合は、VS Code でこのリポジトリを開き、�
 2. リポジトリ名を `{project_name}_ros2` にします。
 3. ROS パッケージは `{project_name}` を接頭辞として、このワークスペース直下に追加します。
 4. 外部リポジトリ依存がある場合は、`build_depends.repos` に追加します。
-5. 依存関係を取得します。
+5. 必要に応じて git submodule を追加します。
+6. ワークスペースをセットアップします。
 
 ```bash
-just deps
+just setup
+```
+
+`just setup` は、git submodule の初期化と外部リポジトリ依存の取得、rosdep による依存パッケージのインストールをまとめて実行します。
+
+## 依存関係の管理
+
+このテンプレートでは、依存の種類に応じて管理方法を分けます。
+
+- 自分たちで管理する基幹ライブラリ: git submodule
+- apt で入らない外部 ROS パッケージや既成ドライバ: `build_depends.repos`
+- apt で入るシステム依存: 各 ROS パッケージの `package.xml` と rosdep
+
+git submodule を追加した場合は、以下で初期化できます。
+
+```bash
+just submodules
+```
+
+外部 ROS パッケージや既成ドライバは、`build_depends.repos` に追加します。
+
+```yaml
+repositories:
+  drivers/some_driver:
+    type: git
+    url: https://github.com/example/some_driver.git
+    version: main
 ```
 
 ## よく使うコマンド
@@ -31,6 +58,12 @@ just deps
 ```bash
 # 利用できるコマンドを表示
 just
+
+# 初回セットアップ
+just setup
+
+# git submodule を初期化
+just submodules
 
 # 依存関係を取得し、rosdep で依存パッケージをインストール
 just deps
@@ -99,3 +132,4 @@ CI では ROS 2 Jazzy 環境で依存関係のインストール、フォーマ�
 - リポジトリ名
 - パッケージ名
 - `build_depends.repos` の依存リポジトリ
+- git submodule として含める基幹ライブラリ

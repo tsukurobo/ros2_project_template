@@ -106,7 +106,8 @@ just clean
 
 ## フォーマットとテスト
 
-このテンプレートでは `.clang-format` と `.pre-commit-config.yaml` を用意しています。
+このテンプレートでは `.clang-format`、`setup.cfg`、`.pre-commit-config.yaml` を用意しています。
+`just format`、pre-commit、CI は C/C++ に `ament_clang_format`、Python に `isort` と `black` を使います。
 
 ```bash
 pre-commit install

@@ -56,4 +56,12 @@ doc *packages: _cd
 
 # format [packages...]
 format *packages: _cd
-    colcon list {{ if packages != "" { "--packages-select " + packages } else { "" } }} --paths-only | xargs ament_clang_format --reformat
+    if [ -z "{{packages}}" ]; then \
+      pre-commit run --all-files || pre-commit run --all-files; \
+    else \
+      package_paths="$(colcon list --packages-select {{packages}} --paths-only)" && \
+      files="$(find $package_paths -type f)" && \
+      if [ -n "$files" ]; then \
+        pre-commit run --files $files || pre-commit run --files $files; \
+      fi; \
+    fi

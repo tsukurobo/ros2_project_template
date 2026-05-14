@@ -60,7 +60,7 @@ format *packages: _cd
       pre-commit run --all-files || pre-commit run --all-files; \
     else \
       package_paths="$(colcon list --packages-select {{packages}} --paths-only)" && \
-      files="$(find $package_paths -type f)" && \
+      files="$(printf '%s\n' "$package_paths" | xargs find -type f)" && \
       if [ -n "$files" ]; then \
         pre-commit run --files $files || pre-commit run --files $files; \
       fi; \

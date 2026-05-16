@@ -18,7 +18,7 @@ jobs:
         ros_distro: [jazzy]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PAT_TOKEN || github.token }}
           submodules: recursive
@@ -50,7 +50,7 @@ jobs:
           pre-commit run --all-files || true
 
       - name: Commit and push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "style: auto formatting"
           file_pattern: '*'

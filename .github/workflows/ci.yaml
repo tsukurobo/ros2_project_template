@@ -23,14 +23,6 @@ jobs:
           token: ${{ secrets.PAT_TOKEN || github.token }}
           submodules: recursive
 
-      - name: Set project names
-        run: |
-          REPOSITORY_NAME="${GITHUB_REPOSITORY##*/}"
-          PROJECT_NAME="${REPOSITORY_NAME%_ros2}"
-          echo "PROJECT_NAME=$PROJECT_NAME" >> "$GITHUB_ENV"
-          echo "PACKAGE_PREFIX=$PROJECT_NAME" >> "$GITHUB_ENV"
-          echo "MSGS_PACKAGE=${PROJECT_NAME}_msgs" >> "$GITHUB_ENV"
-
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@v0.7
         with:
@@ -58,8 +50,9 @@ jobs:
       - name: Build with colcon
         run: |
           source /opt/ros/${{ matrix.ros_distro }}/setup.bash
-          if colcon list --names-only | grep -qx "$MSGS_PACKAGE"; then
-            colcon build --packages-select "$MSGS_PACKAGE" --symlink-install
+          MSGS_PACKAGES=$(colcon list --names-only | grep -E '_msgs$' | xargs || true)
+          if [ -n "$MSGS_PACKAGES" ]; then
+            colcon build --packages-select $MSGS_PACKAGES --symlink-install
             source install/setup.bash
             export PYTHONPATH=/opt/ros/${{ matrix.ros_distro }}/lib/python3.12/site-packages:$PYTHONPATH
           fi
@@ -70,21 +63,14 @@ jobs:
         run: |
           source install/setup.bash
           ALL_PKGS=$(colcon list --names-only | xargs)
-          TARGET_PKGS=$(printf '%s\n' $ALL_PKGS | grep -E "^${PACKAGE_PREFIX}(_|$)" | xargs || true)
-
-          if [ -z "$TARGET_PKGS" ]; then
-            TARGET_PKGS="$ALL_PKGS"
-            echo "No packages starting with '${PACKAGE_PREFIX}' found. Falling back to all packages."
-          fi
-
-          if [ -z "$TARGET_PKGS" ]; then
+          if [ -z "$ALL_PKGS" ]; then
             echo "No packages found. Skipping tests."
             echo "SKIP_TEST_RESULTS=1" >> "$GITHUB_ENV"
             exit 0
           fi
 
-          echo "Target packages for testing: $TARGET_PKGS"
-          colcon test --packages-select $TARGET_PKGS --event-handlers console_direct+ --return-code-on-test-failure
+          echo "Target packages for testing: $ALL_PKGS"
+          colcon test --packages-select $ALL_PKGS --event-handlers console_direct+ --return-code-on-test-failure
 
       - name: Check test results
         if: env.SKIP_TEST_RESULTS != '1'

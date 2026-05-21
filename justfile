@@ -42,8 +42,17 @@ test *packages: _cd
 # run launch file from bringup package
 run name: _cd
     source install/setup.bash && \
-    project_name="$(basename "{{justfile_directory()}}" | sed 's/_ros2$//')" && \
-    ros2 launch "${project_name}_bringup" {{name}}.launch.yaml
+    bringup_packages="$(colcon list --names-only | grep -E '_bringup$' || true)" && \
+    bringup_count="$(printf '%s\n' "$bringup_packages" | sed '/^$/d' | wc -l)" && \
+    if [ "$bringup_count" -eq 0 ]; then \
+      echo "No package ending with '_bringup' found."; \
+      exit 1; \
+    elif [ "$bringup_count" -gt 1 ]; then \
+      echo "Multiple bringup packages found:"; \
+      printf '%s\n' "$bringup_packages"; \
+      exit 1; \
+    fi && \
+    ros2 launch "$bringup_packages" {{name}}.launch.yaml
 
 # clean [packages...]
 clean *packages: _cd

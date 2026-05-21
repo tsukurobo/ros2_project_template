@@ -17,11 +17,10 @@ Dev Container を使う場合は、VS Code でこのリポジトリを開き、�
 ## セットアップ
 
 1. このリポジトリをテンプレートとして新しいリポジトリを作成します。
-2. リポジトリ名を `{project_name}_ros2` にします。
-3. ROS パッケージは `{project_name}` を接頭辞として、このワークスペース直下に追加します。
-4. 外部リポジトリ依存がある場合は、`build_depends.repos` に追加します。
-5. 必要に応じて git submodule を追加します。
-6. ワークスペースをセットアップします。
+2. ROS パッケージをこのリポジトリ直下のサブディレクトリとして追加します。
+3. 外部リポジトリ依存がある場合は、`build_depends.repos` に追加します。
+4. 必要に応じて git submodule を追加します。
+5. ワークスペースをセットアップします。
 
 ```bash
 just setup
@@ -90,19 +89,18 @@ just format
 just clean
 ```
 
-`just run <launch_name>` は、`{project_name}_bringup` パッケージ内の
-`<launch_name>.launch.yaml` を実行します。
+`just run <launch_name>` は、ワークスペース内の `_bringup` で終わるパッケージを探し、
+そのパッケージ内の `<launch_name>.launch.yaml` を実行します。
 
 ## 命名規則
 
-このテンプレートでは、リポジトリ名とパッケージ名を以下の規則に固定しています。
+このテンプレートでは、パッケージ名を以下の規則にしています。
 
-- リポジトリ名: `{project_name}_ros2`
-- パッケージ接頭辞: `{project_name}`
-- bringup パッケージ: `{project_name}_bringup`
-- msg パッケージ: `{project_name}_msgs`
+- bringup パッケージ: `_bringup` で終わる名前
+- msg パッケージ: `_msgs` で終わる名前
 
-`just` と CI は、リポジトリ名から末尾の `_ros2` を除いた値を `{project_name}` として扱います。
+CI は、`_msgs` で終わるパッケージを先にビルドしてから全パッケージをビルドし、
+全パッケージをテストします。
 
 ## フォーマットとテスト
 
@@ -122,6 +120,7 @@ CI では ROS 2 Jazzy 環境で依存関係のインストール、フォーマ�
 .
 ├── .devcontainer/          # ROS 2 Jazzy 用 Dev Container
 ├── .github/workflows/      # GitHub Actions CI
+├── <package>/              # ROS パッケージ
 ├── build_depends.repos     # vcs import 用の外部リポジトリ依存
 ├── justfile                # 開発コマンド
 ├── .clang-format           # C/C++ フォーマット設定
@@ -130,7 +129,6 @@ CI では ROS 2 Jazzy 環境で依存関係のインストール、フォーマ�
 
 ## テンプレート利用時に見直すもの
 
-- リポジトリ名
 - パッケージ名
 - `build_depends.repos` の依存リポジトリ
 - git submodule として含める基幹ライブラリ

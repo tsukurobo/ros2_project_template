@@ -19,7 +19,7 @@ Dev Container を使う場合は、VS Code でこのリポジトリを開き、�
 1. このリポジトリをテンプレートとして新しいリポジトリを作成します。
 2. ROS パッケージをこのリポジトリ直下のサブディレクトリとして追加します。
 3. 外部リポジトリ依存がある場合は、`build_depends.repos` に追加します。
-4. 必要に応じて git submodule を追加します。
+4. 必要に応じて git submodule など、チームに合う管理方法を追加します。
 5. ワークスペースをセットアップします。
 
 ```bash
@@ -30,13 +30,15 @@ just setup
 
 ## 依存関係の管理
 
-このテンプレートでは、依存の種類に応じて管理方法を分けます。
+このテンプレートでは、リポジトリ依存は基本的に `build_depends.repos` で管理します。
+複数リポジトリを同じ手順で取得でき、CI や Dev Container でも扱いやすくなります。
 
-- 自分たちで管理する基幹ライブラリ: git submodule
+- 自分たちで管理する基幹ライブラリ: 基本は `build_depends.repos`
 - apt で入らない外部 ROS パッケージや既成ドライバ: `build_depends.repos`
 - apt で入るシステム依存: 各 ROS パッケージの `package.xml` と rosdep
 
-git submodule を追加した場合は、以下で初期化できます。
+ただし、リポジトリの履歴やバージョンを親リポジトリ側で強く固定したい場合などは、
+git submodule を使ってもかまいません。git submodule を追加した場合は、以下で初期化できます。
 
 ```bash
 just submodules
@@ -131,4 +133,4 @@ CI では ROS 2 Jazzy 環境で依存関係のインストール、フォーマ�
 
 - パッケージ名
 - `build_depends.repos` の依存リポジトリ
-- git submodule として含める基幹ライブラリ
+- git submodule として管理したい依存があるか

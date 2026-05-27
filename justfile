@@ -6,8 +6,6 @@ default:
   @just --list
 
 alias dep := deps
-alias s := setup
-alias submodule := submodules
 alias b := build
 alias t := test
 alias r := run
@@ -15,13 +13,6 @@ alias d := doc
 
 _cd:
   @cd {{justfile_directory()}}
-
-# setup workspace
-setup: submodules deps
-
-# initialize git submodules
-submodules: _cd
-  git submodule update --init --recursive
 
 # install dependencies
 deps: _cd
@@ -32,12 +23,43 @@ deps: _cd
 
 # build [packages...]
 build *packages: _cd
-    colcon build --symlink-install {{ if packages == "" { "" } else { "--packages-select " + packages } }}
+    source /opt/ros/{{ros_distro}}/setup.bash && \
+    if [ -z "{{packages}}" ]; then \
+      msgs_packages="$(colcon list --names-only | grep -E '_msgs$' | xargs || true)" && \
+      if [ -n "$msgs_packages" ]; then \
+        colcon build --packages-select $msgs_packages --symlink-install && \
+        source install/setup.bash; \
+      fi; \
+      colcon build --event-handlers console_direct+ --symlink-install; \
+    else \
+      colcon build --symlink-install --packages-select {{packages}}; \
+    fi
 
 # test [packages...]
 test *packages: _cd
-    source install/setup.bash && \
-    colcon test {{ if packages == "" { "" } else { "--packages-select " + packages } }} --event-handlers console_direct+ --return-code-on-test-failure
+    source /opt/ros/{{ros_distro}}/setup.bash && \
+    if [ -z "{{packages}}" ]; then \
+      all_packages="$(colcon list --names-only | xargs)" && \
+      if [ -z "$all_packages" ]; then \
+        echo "No packages found. Skipping tests."; \
+        exit 0; \
+      fi; \
+      if [ -f install/setup.bash ]; then \
+        source install/setup.bash; \
+      else \
+        echo "No install/setup.bash found. Run 'just build' first."; \
+        exit 1; \
+      fi; \
+      colcon test --packages-select $all_packages --event-handlers console_direct+ --return-code-on-test-failure; \
+    else \
+      if [ -f install/setup.bash ]; then \
+        source install/setup.bash; \
+      else \
+        echo "No install/setup.bash found. Run 'just build' first."; \
+        exit 1; \
+      fi; \
+      colcon test --packages-select {{packages}} --event-handlers console_direct+ --return-code-on-test-failure; \
+    fi
 
 # run launch file from bringup package
 run name: _cd

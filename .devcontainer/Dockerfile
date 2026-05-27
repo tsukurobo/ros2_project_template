@@ -21,8 +21,7 @@ RUN groupadd --gid ${USER_GID} ${USERNAME} \
 RUN apt update && \
     apt install -y software-properties-common && \
     apt install -y curl && \
-    apt install -y wget just pre-commit
-RUN apt install -y ros-${ROS_DISTRO}-turtlesim
+    apt install -y wget just pre-commit gh
 RUN apt install -y ros-${ROS_DISTRO}-rqt*
 RUN apt install -y ros-${ROS_DISTRO}-ros-gz
 

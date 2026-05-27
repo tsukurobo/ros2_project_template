@@ -13,6 +13,8 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: ubuntu-24.04
+    env:
+      ROS_DISTRO: ${{ matrix.ros_distro }}
     strategy:
       matrix:
         ros_distro: [jazzy]
@@ -21,25 +23,22 @@ jobs:
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.PAT_TOKEN || github.token }}
-          submodules: recursive
 
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: ${{ matrix.ros_distro }}
 
-      - name: Install dependencies
+      - name: Install CI tools
         run: |
           sudo apt update
-          sudo apt install -y pre-commit
-          vcs import --input build_depends.repos --recursive .
-          rosdep update --rosdistro ${{ matrix.ros_distro }}
-          rosdep install --from-paths . --ignore-src -r -y --rosdistro ${{ matrix.ros_distro }}
+          sudo apt install -y just pre-commit
+
+      - name: Install dependencies
+        run: just deps
 
       - name: Format code
-        run: |
-          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
-          pre-commit run --all-files || true
+        run: just format || true
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v7
@@ -48,30 +47,15 @@ jobs:
           file_pattern: '*'
 
       - name: Build with colcon
-        run: |
-          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
-          MSGS_PACKAGES=$(colcon list --names-only | grep -E '_msgs$' | xargs || true)
-          if [ -n "$MSGS_PACKAGES" ]; then
-            colcon build --packages-select $MSGS_PACKAGES --symlink-install
-            source install/setup.bash
-            export PYTHONPATH=/opt/ros/${{ matrix.ros_distro }}/lib/python3.12/site-packages:$PYTHONPATH
-          fi
-          colcon build --event-handlers console_direct+ --symlink-install
-
+        run: just build
 
       - name: Run tests
-        run: |
-          source install/setup.bash
-          ALL_PKGS=$(colcon list --names-only | xargs)
-          if [ -z "$ALL_PKGS" ]; then
-            echo "No packages found. Skipping tests."
-            echo "SKIP_TEST_RESULTS=1" >> "$GITHUB_ENV"
-            exit 0
-          fi
-
-          echo "Target packages for testing: $ALL_PKGS"
-          colcon test --packages-select $ALL_PKGS --event-handlers console_direct+ --return-code-on-test-failure
+        run: just test
 
       - name: Check test results
-        if: env.SKIP_TEST_RESULTS != '1'
-        run: colcon test-result --verbose
+        run: |
+          if [ -d log/latest_test ]; then
+            colcon test-result --verbose
+          else
+            echo "No test results found. Skipping."
+          fi

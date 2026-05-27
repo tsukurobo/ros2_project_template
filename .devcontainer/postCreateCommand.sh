@@ -17,6 +17,6 @@ if [ -f "/etc/ros/rosdep/sources.list.d/20-default.list" ]; then
 fi
 
 sudo rosdep init
-just setup
+just deps
 
 echo "Done!"

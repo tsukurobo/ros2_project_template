@@ -18,25 +18,18 @@ Dev Container を使う場合は、VS Code でこのリポジトリを開き、�
 
 1. このリポジトリをテンプレートとして新しいリポジトリを作成します。
 2. ROS パッケージをこのリポジトリ直下のサブディレクトリとして追加します。
-3. 外部リポジトリ依存がある場合は、`build_depends.repos` に追加します。
-4. ワークスペースをセットアップします。
+3. ワークスペースをセットアップします。
 
 ```bash
 just deps
 ```
 
-`just deps` は、外部リポジトリ依存の取得と rosdep による依存パッケージのインストールをまとめて実行します。
+`just deps` は、`build_depends.repos` の取得と rosdep による依存パッケージのインストールをまとめて実行します。
 
 ## 依存関係の管理
 
-このテンプレートでは、リポジトリ依存は `build_depends.repos` で管理します。
-複数リポジトリを同じ手順で取得でき、CI や Dev Container でも扱いやすくなります。
-
-- 自分たちで管理する基幹ライブラリ: `build_depends.repos`
-- apt で入らない外部 ROS パッケージや既成ドライバ: `build_depends.repos`
-- apt で入るシステム依存: 各 ROS パッケージの `package.xml` と rosdep
-
-外部 ROS パッケージや既成ドライバは、`build_depends.repos` に追加します。
+`vcs import` で取得するリポジトリ依存は、`build_depends.repos` にまとめます。
+自分たちで管理する基幹ライブラリ、apt で入らない外部 ROS パッケージ、既成ドライバなどが対象です。
 
 ```yaml
 repositories:
@@ -45,6 +38,8 @@ repositories:
     url: https://github.com/example/some_driver.git
     version: main
 ```
+
+apt で入るシステム依存は、各 ROS パッケージの `package.xml` に書き、rosdep で解決します。
 
 ## よく使うコマンド
 

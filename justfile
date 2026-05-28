@@ -30,7 +30,7 @@ build *packages: _cd
         colcon build --packages-select $msgs_packages --symlink-install && \
         source install/setup.bash; \
       fi; \
-      colcon build --event-handlers console_direct+ --symlink-install; \
+      colcon build --symlink-install; \
     else \
       colcon build --symlink-install --packages-select {{packages}}; \
     fi

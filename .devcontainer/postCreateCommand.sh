@@ -19,4 +19,6 @@ fi
 sudo rosdep init
 just deps
 
+pre-commit install
+
 echo "Done!"

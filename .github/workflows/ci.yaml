@@ -47,10 +47,14 @@ jobs:
           file_pattern: '*'
 
       - name: Build with colcon
-        run: just build
+        run: |
+          source /opt/ros/${ROS_DISTRO}/setup.bash
+          just build
 
       - name: Run tests
-        run: just test
+        run: |
+          source /opt/ros/${ROS_DISTRO}/setup.bash
+          just test
 
       - name: Check test results
         run: |

@@ -31,7 +31,7 @@ test *packages: _cd
     colcon test {{ if packages == "" { "" } else { "--packages-select " + packages } }} --event-handlers console_direct+ --return-code-on-test-failure
 
 # run launch file from bringup package
-run name: _cd
+run name *args: _cd
     source install/setup.bash && \
     bringup_packages="$(colcon list --names-only | grep -E '_bringup$' || true)" && \
     bringup_count="$(printf '%s\n' "$bringup_packages" | sed '/^$/d' | wc -l)" && \
@@ -43,7 +43,7 @@ run name: _cd
       printf '%s\n' "$bringup_packages"; \
       exit 1; \
     fi && \
-    ros2 launch "$bringup_packages" {{name}}.launch.yaml
+    ros2 launch "$bringup_packages" {{name}}.launch.yaml {{args}}
 
 # clean [packages...]
 clean *packages: _cd

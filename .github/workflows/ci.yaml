@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.PAT_TOKEN || github.token }}
 
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@v0.7
@@ -33,11 +35,7 @@ jobs:
           sudo apt install -y just pre-commit
 
       - name: Install dependencies
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          gh auth setup-git --hostname github.com
-          just deps
+        run: just deps
 
       - name: Format code
         run: just format || true

@@ -1,1 +1,2 @@
 repositories:
+  # Place imported repositories under dep/ so `just test` can exclude them.

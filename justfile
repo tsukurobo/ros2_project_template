@@ -28,7 +28,13 @@ build *packages: _cd
 # test [packages...]
 test *packages: _cd
     source install/setup.bash && \
-    colcon test {{ if packages == "" { "" } else { "--packages-select " + packages } }} --event-handlers console_direct+ --return-code-on-test-failure
+    if [ -z "{{packages}}" ]; then \
+      dependency_packages="$(colcon list --base-paths dep --names-only)" && \
+      package_args="${dependency_packages:+--packages-skip $dependency_packages}"; \
+    else \
+      package_args="--packages-select {{packages}}"; \
+    fi && \
+    colcon test $package_args --event-handlers console_direct+ --return-code-on-test-failure
 
 # run launch file from bringup package
 run name *args: _cd

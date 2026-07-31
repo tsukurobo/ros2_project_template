@@ -28,12 +28,13 @@ just deps
 
 ## 依存関係の管理
 
-`vcs import` で取得するリポジトリ依存は、`build_depends.repos` にまとめます。
+`vcs import` で取得するリポジトリ依存は、`build_depends.repos` にまとめ、
+`dep/` 配下へ配置します。
 自分たちで管理する基幹ライブラリ、apt で入らない外部 ROS パッケージ、既成ドライバなどが対象です。
 
 ```yaml
 repositories:
-  drivers/some_driver:
+  dep/some_driver:
     type: git
     url: https://github.com/example/some_driver.git
     version: main
@@ -72,6 +73,9 @@ just format
 just clean
 ```
 
+引数なしの `just test` は、`dep/` 配下の外部依存を除き、プロジェクト自身の
+パッケージをテストします。外部依存も明示的に指定すればテストできます。
+
 `just run <launch_name>` は、ワークスペース内の `_bringup` で終わるパッケージを探し、
 そのパッケージ内の `<launch_name>.launch.yaml` を実行します。
 
@@ -82,8 +86,8 @@ just clean
 - bringup パッケージ: `_bringup` で終わる名前
 - msg パッケージ: `_msgs` で終わる名前
 
-CI は、`_msgs` で終わるパッケージを先にビルドしてから全パッケージをビルドし、
-全パッケージをテストします。
+CI は全パッケージをビルドし、`dep/` 配下の外部依存を除いたプロジェクト自身の
+パッケージをテストします。
 
 ## フォーマットとテスト
 
@@ -103,6 +107,7 @@ CI では ROS 2 Jazzy 環境で依存関係のインストール、フォーマ�
 .
 ├── .devcontainer/          # ROS 2 Jazzy 用 Dev Container
 ├── .github/workflows/      # GitHub Actions CI
+├── dep/                    # vcs import で取得する外部リポジトリ依存
 ├── <package>/              # ROS パッケージ
 ├── build_depends.repos     # vcs import 用の外部リポジトリ依存
 ├── justfile                # 開発コマンド

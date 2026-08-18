@@ -38,7 +38,9 @@ jobs:
         run: just deps
 
       - name: Format code
-        run: just format || true
+        run: |
+          source /opt/ros/${ROS_DISTRO}/setup.bash
+          just format
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v7

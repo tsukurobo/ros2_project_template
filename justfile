@@ -14,6 +14,14 @@ alias d := doc
 _cd:
   @cd {{justfile_directory()}}
 
+# check git status of all repositories
+status: _cd
+  find dep -type d -name .git -exec sh -c 'dir=$(dirname "{}"); echo "\033[34m=== $(basename "$dir") ===\033[m"; cd "$dir" && git status; echo ""' \;
+
+# update repositories (git pull)
+pull: _cd
+  find dep -type d -name .git -exec sh -c 'cd "$(dirname "{}")" && git pull' \;
+
 # install dependencies
 deps: _cd
   vcs import --input build_depends.repos --recursive .

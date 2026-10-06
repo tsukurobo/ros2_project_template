@@ -35,7 +35,11 @@ jobs:
           sudo apt install -y just pre-commit
 
       - name: Install dependencies
-        run: just deps
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh auth setup-git --hostname github.com
+          just deps
 
       - name: Format code
         run: |
